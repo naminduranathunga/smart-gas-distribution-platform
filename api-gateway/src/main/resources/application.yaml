@@ -7,38 +7,40 @@ spring:
 
   cloud:
     gateway:
-      # Auto-discovers services from Eureka
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
+      server:
+        webmvc:
+          # Auto-discovers services from Eureka
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
 
-      # Manual routes — explicit control
-      routes:
+          # Manual routes — explicit control
+          routes:
 
-        # ── User Service ──────────────────────
-        - id: user-service
-          uri: lb://user-service        # lb = load balanced via Eureka
-          predicates:
-            - Path=/api/users/**
-          filters:
-            - StripPrefix=0
+            # ── User Service ──────────────────────
+            - id: user-service
+              uri: lb://user-service        # lb = load balanced via Eureka
+              predicates:
+                - Path=/api/v1/users/**
+              filters:
+                - StripPrefix=0
 
-        # ── Inventory Service ─────────────────
-        - id: inventory-service
-          uri: lb://inventory-service
-          predicates:
-            - Path=/api/inventory/**
-          filters:
-            - StripPrefix=0
+            # ── Inventory Service ─────────────────
+            - id: inventory-service
+              uri: lb://inventory-service
+              predicates:
+                - Path=/api/v1/inventory/**
+              filters:
+                - StripPrefix=0
 
-        # ── Queue Service ─────────────────────
-        - id: queue-service
-          uri: lb://queue-service
-          predicates:
-            - Path=/api/queue/**
-          filters:
-            - StripPrefix=0
+            # ── Queue Service ─────────────────────
+            - id: queue-service
+              uri: lb://queue-service
+              predicates:
+                - Path=/api/v1/queue/**
+              filters:
+                - StripPrefix=0
 
 eureka:
   client:

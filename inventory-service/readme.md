@@ -157,9 +157,8 @@ docker compose up --build -d
 | URL | Description |
 |---|---|
 | http://localhost:8761 | Eureka Dashboard — all services should appear |
-| http://localhost:8080 | API Gateway |
-| http://localhost:8081/api/v1/users/test | User Service test endpoint |
-| http://localhost:8082/api/v1/inventory/test | Inventory Service test endpoint |
+| http://localhost:8080/api/v1/users/test | User Service test endpoint (via Gateway) |
+| http://localhost:8080/api/v1/inventory/test | Inventory Service test endpoint (via Gateway) |
 
 ---
 
@@ -198,18 +197,12 @@ mvnw.cmd spring-boot:run        # Windows
 
 ## Test Endpoints
 
-Quick smoke-test to confirm each service is up.
+Quick smoke-test to confirm each service is up. All requests go through the API Gateway on port `8080`.
 
 | Method | URL | Expected Response |
 |---|---|---|
-| GET | http://localhost:8081/api/v1/users/test | `{"service":"user-service","status":"ok","message":"User Service is running"}` |
-| GET | http://localhost:8082/api/v1/inventory/test | `{"service":"inventory-service","status":"ok","message":"Inventory Service is running"}` |
-
-Via API Gateway:
-```
-GET http://localhost:8080/api/v1/users/test
-GET http://localhost:8080/api/v1/inventory/test
-```
+| GET | http://localhost:8080/api/v1/users/test | `{"service":"user-service","status":"ok","message":"User Service is running"}` |
+| GET | http://localhost:8080/api/v1/inventory/test | `{"service":"inventory-service","status":"ok","message":"Inventory Service is running"}` |
 
 ---
 
@@ -316,3 +309,32 @@ GET http://localhost:8080/actuator/health   # API Gateway
 # All registered routes (Gateway)
 GET http://localhost:8080/actuator/gateway/routes
 ```
+
+---
+
+## API Gateway Notes
+
+This project uses **Spring Cloud Gateway MVC** (`spring-cloud-starter-gateway-server-webmvc`), the servlet-based (non-reactive) variant. It runs on Tomcat instead of Netty.
+
+The correct configuration namespace for routes and discovery is:
+
+```yaml
+spring:
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          discovery:
+            locator:
+              enabled: true
+              lower-case-service-id: true
+          routes:
+            - id: user-service
+              uri: lb://user-service
+              predicates:
+                - Path=/api/v1/users/**
+              filters:
+                - StripPrefix=0
+```
+
+> **Note:** Using `spring.cloud.gateway.routes` (reactive namespace) or `spring.cloud.gateway.mvc.routes` (old MVC namespace) will silently register no routes and all requests will return 404. The correct prefix is `spring.cloud.gateway.server.webmvc`.
