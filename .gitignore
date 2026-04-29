@@ -1,0 +1,96 @@
+# ===========================
+# Maven
+# ===========================
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+*.jar
+*.war
+*.ear
+
+# ===========================
+# Maven Wrapper
+# ===========================
+!**/mvnw
+!**/mvnw.cmd
+.mvn/
+
+# ===========================
+# Spring Boot
+# ===========================
+application-local.yml
+application-local.properties
+*.env
+
+# ===========================
+# IntelliJ IDEA
+# ===========================
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+.idea_modules/
+
+# ===========================
+# VS Code
+# ===========================
+.vscode/
+*.code-workspace
+
+# ===========================
+# Eclipse
+# ===========================
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# ===========================
+# Docker
+# ===========================
+# Keep docker-compose.yml but ignore overrides
+docker-compose.override.yml
+
+# ===========================
+# Environment & Secrets
+# ===========================
+.env
+.env.local
+.env.*
+*.secret
+secrets/
+
+# ===========================
+# Logs
+# ===========================
+logs/
+*.log
+*.log.*
+
+# ===========================
+# OS Files
+# ===========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ===========================
+# Database
+# ===========================
+*.sql.bak
+data/
+
+# ===========================
+# Node (if you add Next.js frontend)
+# ===========================
+node_modules/
+.next/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
