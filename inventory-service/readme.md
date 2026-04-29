@@ -36,13 +36,13 @@ Event-Driven Microservices Architecture using the Netflix OSS stack.
 
 ## Services Overview
 
-| Service | Port | Database | Description |
+| Service | Port | Database | Status |
 |---|---|---|---|
-| Discovery Server (Eureka) | 8761 | — | Service registry and health monitoring |
-| API Gateway | 8080 | — | Single entry point, routing, load balancing |
-| User Service | 8081 | PostgreSQL (5432) | Auth, profiles, role management |
-| Inventory Service | 8082 | PostgreSQL (5433) | Stock management, dealer inventory |
-| Queue Service | 8083 | MongoDB (27017) | Token management, queue processing |
+| Discovery Server (Eureka) | 8761 | — | Active |
+| API Gateway | 8080 | — | Active |
+| User Service | 8081 | PostgreSQL (5432) | Active |
+| Inventory Service | 8082 | PostgreSQL (5433) | Active |
+| Queue Service | 8083 | MongoDB (27017) | Not yet implemented |
 
 ---
 
@@ -51,13 +51,13 @@ Event-Driven Microservices Architecture using the Netflix OSS stack.
 | Layer | Technology |
 |---|---|
 | Language | Java 17 |
-| Framework | Spring Boot 3.2.x |
+| Framework | Spring Boot 3.x |
 | Service Discovery | Netflix Eureka |
 | API Gateway | Spring Cloud Gateway |
 | Inter-service Communication | OpenFeign |
 | ORM | Spring Data JPA / Hibernate |
 | Relational Database | PostgreSQL 15 |
-| Document Database | MongoDB 7 |
+| Document Database | MongoDB 7 (planned) |
 | Security | Spring Security + JWT |
 | Containerization | Docker + Docker Compose |
 | Build Tool | Maven |
@@ -66,14 +66,10 @@ Event-Driven Microservices Architecture using the Netflix OSS stack.
 
 ## Prerequisites
 
-Make sure the following are installed on your machine:
-
 - [Java 17+](https://adoptium.net/)
 - [Maven 3.8+](https://maven.apache.org/)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Git](https://git-scm.com/)
-- [IntelliJ IDEA](https://www.jetbrains.com/idea/) (recommended) or VS Code
-
 
 ---
 
@@ -91,44 +87,58 @@ lpg-system/
 │   └── pom.xml
 ├── user-service/               # User & Auth Service
 │   ├── src/
+│   │   └── main/java/com/gastracker/user_service/
+│   │       ├── config/
+│   │       ├── controller/
+│   │       ├── dao/
+│   │       ├── dto/
+│   │       ├── enums/
+│   │       └── service/
 │   ├── Dockerfile
 │   └── pom.xml
 ├── inventory-service/          # Inventory & Stock Service
 │   ├── src/
+│   │   └── main/java/com/gastracker/inventory_service/
+│   │       ├── controller/
+│   │       ├── dao/
+│   │       ├── dto/
+│   │       ├── enums/
+│   │       └── service/
 │   ├── Dockerfile
 │   └── pom.xml
-├── queue-service/              # Queue & Token Service
-│   ├── src/
-│   ├── Dockerfile
-│   └── pom.xml
-├── frontend/                   # Web UI (Next.js) or Postman collection
+├── build-all.bat               # Windows: build all services at once
 ├── docker-compose.yml          # Full system orchestration
-└── README.md
+└── readme.md
 ```
 
 ---
 
 ## Getting Started
 
-### Option 1 — Run Everything with Docker Compose (Recommended)
+### Option 1 — Docker Compose (Recommended)
 
-This starts all services, databases, and the network with one command.
+Starts all active services and databases with a single command.
 
 **Step 1 — Clone the repository**
 
 ```bash
-git clone https://github.com/your-org/lpg-system.git
+git clone <repo-url>
 cd lpg-system
 ```
 
 **Step 2 — Build all services**
 
+Windows:
+```bat
+build-all.bat
+```
+
+Linux / macOS:
 ```bash
 cd discovery-server && ./mvnw clean package -DskipTests && cd ..
-cd user-service && ./mvnw clean package -DskipTests && cd ..
+cd user-service     && ./mvnw clean package -DskipTests && cd ..
 cd inventory-service && ./mvnw clean package -DskipTests && cd ..
-cd queue-service && ./mvnw clean package -DskipTests && cd ..
-cd api-gateway && ./mvnw clean package -DskipTests && cd ..
+cd api-gateway      && ./mvnw clean package -DskipTests && cd ..
 ```
 
 **Step 3 — Start everything**
@@ -137,46 +147,68 @@ cd api-gateway && ./mvnw clean package -DskipTests && cd ..
 docker compose up --build
 ```
 
-**Step 4 — Verify**
+Run in background:
+```bash
+docker compose up --build -d
+```
+
+**Step 4 — Verify services**
 
 | URL | Description |
 |---|---|
 | http://localhost:8761 | Eureka Dashboard — all services should appear |
-| http://localhost:8080 | API Gateway entry point |
-| http://localhost:8081 | User Service (direct) |
-| http://localhost:8082 | Inventory Service (direct) |
-| http://localhost:8083 | Queue Service (direct) |
+| http://localhost:8080 | API Gateway |
+| http://localhost:8081/api/v1/users/test | User Service test endpoint |
+| http://localhost:8082/api/v1/inventory/test | Inventory Service test endpoint |
 
 ---
 
-### Option 2 — Run Services Locally (Development Mode)
+### Option 2 — Local Development (databases in Docker, services local)
 
-Use this during development — databases in Docker, services running locally for hot reload.
+Use this during development for faster iteration without rebuilding Docker images.
 
-**Step 1 — Start databases and Eureka only**
+**Step 1 — Start only the databases and Eureka**
 
 ```bash
-docker compose up postgres-user postgres-inventory mongodb eureka-server
+docker compose up postgres-user postgres-inventory eureka-server
 ```
 
 **Step 2 — Run each service in a separate terminal**
 
 ```bash
-# Terminal 1
+# Terminal 1 — User Service (port 8081)
 cd user-service
-./mvnw spring-boot:run
+./mvnw spring-boot:run          # Linux / macOS
+mvnw.cmd spring-boot:run        # Windows
 
-# Terminal 2
+# Terminal 2 — Inventory Service (port 8082)
 cd inventory-service
-./mvnw spring-boot:run
+./mvnw spring-boot:run          # Linux / macOS
+mvnw.cmd spring-boot:run        # Windows
 
-# Terminal 3
-cd queue-service
-./mvnw spring-boot:run
-
-# Terminal 4
+# Terminal 3 — API Gateway (port 8080)
 cd api-gateway
-./mvnw spring-boot:run
+./mvnw spring-boot:run          # Linux / macOS
+mvnw.cmd spring-boot:run        # Windows
+```
+
+> Start services in this order: Eureka → User Service → Inventory Service → API Gateway
+
+---
+
+## Test Endpoints
+
+Quick smoke-test to confirm each service is up.
+
+| Method | URL | Expected Response |
+|---|---|---|
+| GET | http://localhost:8081/api/v1/users/test | `{"service":"user-service","status":"ok","message":"User Service is running"}` |
+| GET | http://localhost:8082/api/v1/inventory/test | `{"service":"inventory-service","status":"ok","message":"Inventory Service is running"}` |
+
+Via API Gateway:
+```
+GET http://localhost:8080/api/v1/users/test
+GET http://localhost:8080/api/v1/inventory/test
 ```
 
 ---
@@ -185,38 +217,29 @@ cd api-gateway
 
 All requests go through the API Gateway at `http://localhost:8080`.
 
-### User Service — `/api/users`
+### User Service — `/api/v1/users`
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/api/users/register` | Register new user | No |
-| POST | `/api/users/login` | Login, returns JWT | No |
-| GET | `/api/users/{id}` | Get user by ID | Yes |
-| PUT | `/api/users/{id}` | Update user profile | Yes |
-| GET | `/api/users/role/{role}` | Get users by role | ADMIN |
-| DELETE | `/api/users/{id}` | Delete user | ADMIN |
+| GET | `/api/v1/users/test` | Service health check | No |
+| POST | `/api/v1/users/register` | Register new user | No |
+| POST | `/api/v1/users/login` | Login, returns JWT | No |
+| GET | `/api/v1/users/{id}` | Get user by ID | Yes |
+| PUT | `/api/v1/users/{id}` | Update user profile | Yes |
+| GET | `/api/v1/users/role/{role}` | Get users by role | ADMIN |
+| DELETE | `/api/v1/users/{id}` | Delete user | ADMIN |
 
-### Inventory Service — `/api/inventory`
-
-| Method | Endpoint | Description | Auth |
-|---|---|---|---|
-| POST | `/api/inventory` | Add dealer inventory | DEALER |
-| GET | `/api/inventory/{id}` | Get inventory by ID | Yes |
-| GET | `/api/inventory/dealer/{dealerId}` | Get dealer stock | Yes |
-| GET | `/api/inventory/available` | Get all dealers with stock | Yes |
-| PUT | `/api/inventory/{id}/stock` | Update stock level | DEALER |
-| GET | `/api/inventory/location/{location}` | Get stock by location | Yes |
-
-### Queue Service — `/api/queue`
+### Inventory Service — `/api/v1/inventory`
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|
-| POST | `/api/queue/token` | Claim a token | CITIZEN |
-| GET | `/api/queue/{dealerId}/status` | Get queue status | Yes |
-| GET | `/api/queue/token/{tokenId}` | Get token details | Yes |
-| PUT | `/api/queue/{dealerId}/advance` | Advance queue | DEALER |
-| DELETE | `/api/queue/token/{tokenId}` | Cancel token | CITIZEN |
-| GET | `/api/queue/citizen/{citizenId}` | Get citizen active token | Yes |
+| GET | `/api/v1/inventory/test` | Service health check | No |
+| POST | `/api/v1/inventory` | Add dealer inventory | DEALER |
+| GET | `/api/v1/inventory/{id}` | Get inventory by ID | Yes |
+| GET | `/api/v1/inventory/dealer/{dealerId}` | Get dealer stock | Yes |
+| GET | `/api/v1/inventory/available` | Get all dealers with stock | Yes |
+| PUT | `/api/v1/inventory/{id}/stock` | Update stock level | DEALER |
+| GET | `/api/v1/inventory/location/{location}` | Get stock by location | Yes |
 
 ---
 
@@ -235,30 +258,16 @@ All requests go through the API Gateway at `http://localhost:8080`.
 Services communicate via OpenFeign through the Eureka service registry:
 
 ```
-Queue Service ──► Inventory Service   (verify stock before issuing token)
-Queue Service ──► User Service        (verify citizen identity)
-Inventory Service ──► User Service    (verify dealer role before stock update)
+Queue Service     ──► Inventory Service   (verify stock before issuing token)
+Queue Service     ──► User Service        (verify citizen identity)
+Inventory Service ──► User Service        (verify dealer role before stock update)
 ```
 
 No hardcoded URLs — Eureka resolves service locations dynamically.
 
 ---
 
-## Docker Network
-
-All containers run on a shared bridge network `lpg-network`:
-
-```bash
-# Inspect the network
-docker network inspect lpg-network
-
-# Check running containers
-docker ps
-```
-
----
-
-## Useful Commands
+## Docker Commands
 
 ```bash
 # Start all services
@@ -267,30 +276,43 @@ docker compose up
 # Start in background
 docker compose up -d
 
-# Stop all services (data preserved)
+# Rebuild and start
+docker compose up --build
+
+# Stop (data preserved)
 docker compose down
 
-# Stop and remove all data (fresh start)
+# Stop and wipe all data (fresh start)
 docker compose down -v
 
 # View logs for a specific service
-docker compose logs user-service
+docker compose logs -f user-service
+docker compose logs -f inventory-service
 
 # Restart a single service
 docker compose restart inventory-service
 
-# Rebuild a single service after code change
+# Rebuild a single service after a code change
 docker compose up --build user-service
+
+# Check running containers
+docker ps
+
+# Inspect the shared network
+docker network inspect lpg-network
 ```
 
-----
-# Useful Gateway Actuator Endpoints
+---
 
-Once your Gateway is running, these endpoints help with debugging and monitoring:
+## Actuator Endpoints
 
-#  See all registered routes
+```
+# Service health
+GET http://localhost:8761/actuator/health   # Eureka
+GET http://localhost:8081/actuator/health   # User Service
+GET http://localhost:8082/actuator/health   # Inventory Service
+GET http://localhost:8080/actuator/health   # API Gateway
+
+# All registered routes (Gateway)
 GET http://localhost:8080/actuator/gateway/routes
-
-# Check gateway health
-GET http://localhost:8080/actuator/health
-
+```
