@@ -283,5 +283,14 @@ docker compose restart inventory-service
 docker compose up --build user-service
 ```
 
----
+----
+# Useful Gateway Actuator Endpoints
+
+Once your Gateway is running, these endpoints help with debugging and monitoring:
+
+#  See all registered routes
+GET http://localhost:8080/actuator/gateway/routes
+
+# Check gateway health
+GET http://localhost:8080/actuator/health
 
