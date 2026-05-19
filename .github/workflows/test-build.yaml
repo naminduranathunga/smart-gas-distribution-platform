@@ -1,0 +1,26 @@
+name: Monorepo Buildpack CI/CD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # Hardcode your service directory names exactly as they appear under apps/
+        app: [user-service, allocation-service, api-gateway]
+      fail-fast: false
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+  
+      - name: Set up Pack CLI
+        uses: buildpacks/github-actions/setup-pack@v2.1.1
+  
+      - name: Build Test with Buildpacks
+        run: |
+          pack build ${{ matrix.app }}-test:latest \
+            --path apps/${{ matrix.app }} \
+            --builder paketobuildpacks/builder-jammy-base
