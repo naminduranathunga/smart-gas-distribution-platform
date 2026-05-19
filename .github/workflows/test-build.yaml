@@ -17,7 +17,7 @@ jobs:
         uses: actions/checkout@v4
   
       - name: Set up Pack CLI
-        uses: buildpacks/github-actions/setup-pack@v5
+        uses: buildpacks/github-actions/setup-pack@v5.12.3
   
       - name: Build Test with Buildpacks
         run: |
