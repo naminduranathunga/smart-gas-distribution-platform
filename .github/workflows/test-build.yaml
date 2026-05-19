@@ -22,5 +22,12 @@ jobs:
       - name: Build Test with Buildpacks
         run: |
           pack build ${{ matrix.app }}-test:latest \
-            --path apps/${{ matrix.app }} \
+            --path ${{ matrix.app }} \
             --builder paketobuildpacks/builder-jammy-base
+
+
+
+
+
+
+
